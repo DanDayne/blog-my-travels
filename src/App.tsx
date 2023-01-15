@@ -2,7 +2,8 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { Canvas } from '@react-three/fiber';
-import Planet from './components/Planet';
+import Space from './components/Space';
+import { OrbitControls } from '@react-three/drei';
 
 
 function Loader() {
@@ -28,7 +29,16 @@ function App() {
   return (
     <div className="App">
       <Canvas>
-        <Planet></Planet>
+        <Space/>
+        <OrbitControls
+            enableZoom={true}
+            enablePan={false}
+            enableRotate={true}
+            zoomSpeed={0.5}
+            panSpeed={0.5}
+            rotateSpeed={0.5}
+            minDistance={1.6}
+            maxDistance={2} />
       </Canvas>
     </div>
   );

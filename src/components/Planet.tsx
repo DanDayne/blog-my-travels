@@ -1,62 +1,54 @@
 import { useRef } from "react";
-import { useLoader, useFrame } from "@react-three/fiber";
-import { TextureLoader, DoubleSide, Mesh } from "three";
+import { useFrame } from "@react-three/fiber";
+import { DoubleSide, Mesh, Texture, Vector3 } from "three";
 
-import EarthDayMap from "../assets/textures/8k_earth_daymap.jpg";
-import EarthNormalMap from "../assets/textures/8k_earth_normal_map.jpg";
-import EarthSpecularMap from "../assets/textures/8k_earth_specular_map.jpg";
-import EarthClouds from "../assets/textures/8k_earth_clouds.jpg";
-import { OrbitControls } from "@react-three/drei";
+interface Props {
+    position: Vector3
+    radius: number
+    normalMap: Texture
+    colorMap: Texture
+    specularMap: Texture
+    cloudsMap: Texture | null
+    cloudRotationStep: number | null
+    cloudOpacity: number | null
+}
 
-const RADIUS = 1;
-const CLOUD_RADIUS = 1.009;
+const Planet: React.FC<Props> = (props) => {
 
-const CLOUD_ROATION_Y = 0.0001;
+    var cloudRadius = props.radius + 0.009;
 
-const Planet = () => {
-
-    const [colorMap, normalMap, specularMap, cloudsMap] = useLoader(TextureLoader, [EarthDayMap, EarthNormalMap, EarthSpecularMap, EarthClouds]);
+    const hasClouds = props.cloudsMap !== null && props.cloudRotationStep !== null && props.cloudOpacity !== null;
 
     const cloudsRef = useRef<Mesh>(null);
-    
+
     useFrame(() => {
-        cloudsRef.current?.rotateY(CLOUD_ROATION_Y);
+        if (hasClouds) {
+            cloudsRef.current?.rotateY(props.cloudRotationStep!);
+        }
     });
 
-    return (<>
-        <ambientLight></ambientLight>
+    return <mesh position={props.position}>
         <mesh>
-            <sphereGeometry args={[RADIUS, 32, 32]} />
-            <meshPhongMaterial specularMap={specularMap} />
+            <sphereGeometry args={[props.radius, 32, 32]} />
+            <meshPhongMaterial specularMap={props.specularMap} />
             <meshStandardMaterial
-                map={colorMap}
-                normalMap={normalMap}
+                map={props.colorMap}
+                normalMap={props.normalMap}
                 metalness={0}
                 roughness={1} />
         </mesh>
 
-        <mesh ref={cloudsRef}>
-            <sphereGeometry args={[CLOUD_RADIUS, 32, 32]} />
+        {hasClouds && (<mesh ref={cloudsRef}>
+            <sphereGeometry args={[cloudRadius, 32, 32]} />
             <meshPhongMaterial
                 reflectivity={0}
-                map={cloudsMap}
-                opacity={0.4}
+                map={props.cloudsMap}
+                opacity={props.cloudOpacity!}
                 depthWrite={true}
                 transparent={true}
                 side={DoubleSide} />
-        </mesh>
-
-        <OrbitControls
-            enableZoom={true}
-            enablePan={false}
-            enableRotate={true}
-            zoomSpeed={0.5}
-            panSpeed={0.5}
-            rotateSpeed={0.5}
-            minDistance={1.6}
-            maxDistance={2} />
-    </>
-    );
+        </mesh>)}
+    </mesh>;
 };
 
 export default Planet;
